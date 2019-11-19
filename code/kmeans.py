@@ -9,8 +9,8 @@ class KMeans():
 
         The KMeans algorithm has two steps:
 
-        1. Update assignments
-        2. Update the means
+        1. Update assignmentsmeans
+        2. Update the
 
         While you only have to implement the fit and predict functions to pass the
         test cases, we recommend that you use an update_assignments function and an
@@ -26,6 +26,20 @@ class KMeans():
         self.means = None
 
     def fit(self, features):
+        picks = np.random.choice(features.shape[0], self.n_clusters)
+        newmeans = features[picks, :]
+        self.means = np.zeros([newmeans.shape[0], newmeans.shape[1]])
+        labels = np.zeros(features.shape[0])
+        while (not np.allclose(newmeans, self.means)):
+            self.means = newmeans.copy()
+            for i in range(features.shape[0]):
+                distances = np.zeros(self.n_clusters)
+                for j in range(self.n_clusters):
+                    distances[j] = np.sqrt(np.sum(np.square(features[i] - self.means[j])))
+                labels[i] = np.argmin(distances)
+            for k in range(self.n_clusters):
+                newmeans[k, :] = np.mean(features[np.where(labels == k), :].squeeze(axis = 0) , axis = 0)
+
         """
         Fit KMeans to the given data using `self.n_clusters` number of clusters.
         Features can have greater than 2 dimensions.
@@ -36,9 +50,20 @@ class KMeans():
         Returns:
             None (saves model - means - internally)
         """
-        raise NotImplementedError()
+        #raise NotImplementedError()
 
     def predict(self, features):
+
+        labels = np.zeros(features.shape[0])
+
+        for i in range(features.shape[0]):
+            distances = np.zeros(self.n_clusters)
+            for j in range(self.n_clusters):
+                distances[j] = np.sqrt(np.sum(np.square(features[i] - self.means[j])))
+            labels[i] = np.argmin(distances)
+        return labels;
+
+
         """
         Given features, an np.ndarray of size (n_samples, n_features), predict cluster
         membership labels.
@@ -51,4 +76,4 @@ class KMeans():
                 of size (n_samples,). Each element of the array is the index of the
                 cluster the sample belongs to.
         """
-        raise NotImplementedError()
+        #   raise NotImplementedError()

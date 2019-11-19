@@ -1,7 +1,13 @@
 {
-    "score": 0,
-    "tests_passed": 0,
+    "score": 50,
+    "tests_passed": 5,
     "notes": {
-        "test_netid": "FAIL - REQUIRED (automatic zero)"
+        "test_generate_cluster_data": "PASS",
+        "test_kmeans_on_generated": "PASS",
+        "test_gmm_spec": "PASS",
+        "test_kmeans_spec": "PASS",
+        "test_gmm_likelihood": "PASS",
+        "test_gmm_spherical_on_generated": "FAIL",
+        "test_gmm_diagonal_on_generated": "FAIL"
     }
 }

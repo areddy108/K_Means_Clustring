@@ -116,7 +116,7 @@ def _test_gmm_parameters(covariance_type):
                     model.fit(features)
                     covariances = model.covariances
                     for cov in covariances:
-                        assert (np.abs(np.sqrt(cov) - s).mean() < 1e-1)
+                       assert (np.abs(np.sqrt(cov) - s).mean() < 1e-1)
 
                     means = model.means
                     orderings = permutations(means)

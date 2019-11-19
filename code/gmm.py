@@ -80,13 +80,15 @@ class GMM():
         # not been reached, continue EM until convergence.
         n_iter = 0
         while log_likelihood - prev_log_likelihood > 1e-4 and n_iter < self.max_iterations:
+            print('test')
             prev_log_likelihood = log_likelihood
 
             assignments = self._e_step(features)
+            #print(self.covariances)
             self.means, self.covariances, self.mixing_weights = (
                 self._m_step(features, assignments)
             )
-
+            #print(self.covariances)
             log_likelihood = self._overall_log_likelihood(features)
             n_iter += 1
 
@@ -107,6 +109,12 @@ class GMM():
         return np.argmax(posteriors, axis=-1)
 
     def _e_step(self, features):
+
+        posterior_probs = np.zeros([features.shape[0], self.n_clusters])
+        for i in range(self.n_clusters):
+            posterior_probs[:, i] = self._posterior(features, i)
+        print(posterior_probs)
+        return posterior_probs
         """
         The expectation step in Expectation-Maximization. Given the current class member
         variables self.mean, self.covariance, and self.mixing_weights:
@@ -126,16 +134,45 @@ class GMM():
             np.ndarray -- Posterior probabilities to each Gaussian (shape is
                 (features.shape[0], self.n_clusters))
         """
-        raise NotImplementedError()
+        #raise NotImplementedError()
 
     def _m_step(self, features, assignments):
+        resp = np.zeros(self.n_clusters)
+        mixing_weights = np.zeros(self.n_clusters)
+        means = np.zeros([features.shape[1], self.n_clusters])
+        #print(means)
+        #print(means)
+        cv = np.zeros([features.shape[1], self.n_clusters])
+
+        #print(self.covariances)
+        #print(assignments)
+        for j in range(self.n_clusters):
+            resp[j] = np.sum(assignments[:, j])
+            print(assignments[:, j])
+                #print(resp[j], resp[j]/features.shape[0])
+            mixing_weights[j] = resp[j]/features.shape[0]
+            print(mixing_weights[j])
+            newmean = 0;
+            newcv = 0;
+            for i in range(features.shape[0]):
+                newmean += assignments[i, j] * features[i, :]
+                newcv += assignments[i,j]*np.square(features[i, :]-self.means[j])
+            #(means[j, :], 'a', newmean)
+            means[:, j] = newmean/resp[j]
+            cv[:, j] = newcv/resp[j]
+
+        #print(means, cv, mixing_weights)
+        return means, cv, mixing_weights
+
+
+
         """
         Maximization step in Expectation-Maximization. Given the current features and
         assignments, update self.means, self.covariances, and self.mixing_weights. Here,
         you implement the update equations for the means, covariances, and mixing weights.
             1. Update the means with the mu_j update in Slide 24.
-            2. Update the mixing_weights with the w_j update in Slide 24
-            3. Update the covariance matrix with the sigma_j update in Slide 24.
+            2. Update the .mixing_weights with the w_j update in Slide 24
+            3. Update the covariance matrix with the sigma_j update in Slide 24
 
         Slide 24 is in these slides: 
             https://github.com/NUCS349/nucs349.github.io/blob/master/lectures/eecs349_gaussian_mixture_models.pdf
@@ -155,7 +192,7 @@ class GMM():
             covariances -- Updated covariances
             mixing_weights -- Updated mixing weights
         """
-        raise NotImplementedError()
+        #raise NotImplementedError()
 
     def _init_covariance(self, n_features):
         """
@@ -175,6 +212,12 @@ class GMM():
             return np.random.rand(self.n_clusters, n_features)
 
     def _log_likelihood(self, features, k_idx):
+        #print(self.covariances[k_idx])
+        #print(self.covariances[k_idx])
+
+        logpdf = multivariate_normal.logpdf(features, self.means[k_idx], self.covariances[k_idx])
+        likelihood = np.log(self.mixing_weights[k_idx]) + logpdf
+        return likelihood
         """
         Compute the likelihood of the features given the index of the Gaussian
         in the mixture model. This function compute the log multivariate_normal
@@ -203,7 +246,7 @@ class GMM():
         Returns:
             np.ndarray -- log likelihoods of each feature given a Gaussian.
         """
-        raise NotImplementedError()
+        #raise NotImplementedError()
 
     def _overall_log_likelihood(self, features):
         denom = [
